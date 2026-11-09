@@ -1,0 +1,174 @@
+- Adjust proposal and re-evaluate random forest and actual models to be used
+
+
+Machine Learning Project Proposal
+Monthly Precipitation Forecasting in Bishop, California
+
+Project type: 
+An applied machine learning approach to predictive weather forecast for a specific locality. A comparative study of a historical baseline, random forest regression, and small neural network, with ENSO indicators as potential predictors. 
+
+The project applies supervised learning to a real-world environmental forecasting problem. It combines historical climate observations with machine learning methods to investigate whether future monthly precipitation can be predicted more accurately than with a simple historical reference. 
+
+The scope is intentionally limited to Bishop, California, and monthly precipitation. The code and data pipeline will be organized so that another location could be added later, but multi-location generalization is not a core requirement.
+
+Project Idea: 
+Can machine learning models improve monthly precipitation predictions for Bishop, California, compared with a historical-average baseline, and does incorporating El Niño–Southern Oscillation (ENSO) indicators improve predictive performance. 
+
+The main topic idea is to predict precipitation totals using historical precipitation, seasonal information, and ENSO climate indicators. This is special because ENSO is associated with broad changes in ocean and atmospheric conditions, but its local effects vary by region and season. This project tests whether ENSO information provides useful predictive signal for precipitation in a specific California location, rather than assuming that El Niño directly determines local weather.
+
+The application also has a practical motivation: precipitation can affect outdoor recreation and climbing plans. Monthly forecasts would not determine whether a specific day or route is safe, but they may help characterize broader wet and
+dry periods.
+
+The primary research question is whether a machine learning model predict next-month precipitation at Bishop better than a historical average baseline. The secondary question is whether adding ENSO indicators improve predictive performance beyond calendar and recent precipitation features. 
+
+
+These are the particular hypotheses that will be tested: 
+Random forest regression may capture nonlinear relationships between recent precipitation, seasonality, and ENSO. 
+
+A small neural network may learn useful patterns, but it may also overfit if the historical dataset is limited.
+
+ENSO features may improve predictions, but the improvement may be small or inconsistent at a local scale.
+
+The primary target will be total precipitation in the next calendar month. Unusually wet months will be analyzed as a secondary outcome after the historical distribution has been inspected. 
+
+Related Work/ GitHub References
+These are starting points for understanding data handling, model design and climate forecasting context. 
+
+Precipitation prediction with Machine Learning
+Relevant because it explores machine learning approaches for precipitation prediction, including tree-based models and neural networks. Review its target definition, evaluation methods, and treatment of extreme precipitation.
+
+Fetching and processing NOAA Global Historical Climatology Network Weather Data
+Useful as a reference for working with NOAA station observations, metadata, and tabular weather data. The project should verify station coverage and data completeness independently.
+
+Seasonal Precipitation Forecast based on a Machine Learning Approach
+Provides research context for using large-scale climate and atmospheric information to predict regional precipitation. The proposed class project is a much smaller, single-location study.
+
+NOAA Global Historical Climatology Network daily (GHCNd)
+candidate source for daily station precipitation.
+
+NOAA Climate Data Online
+find stations and obtain historical observations.
+
+NOAA Monthly Climate/Ocean Indices (Time-Series) at PSL
+additional climate indices if needed.
+
+Footnote on Data Feasibility: 
+Need to inspect the length and completeness of a long-running station record near Bishop. A short or incomplete local record may not contain enough independent El Niño events to support strong conclusions. If needed, consider a suitable gridded precipitation product or a nearby official station, documenting the geographic trade-off
+
+Proposed Methods / Pipeline
+
+Data and Features:
+Aggregate daily precipitation observations into monthly totals. Candidate predictors include calendar month, precipitation in the previous month, rolling precipitation totals over the previous three and six months, and ENSO index values that would actually have been available at forecast time.
+
+
+Forecasting Setup:
+Predict month t precipitation using information available by the end of month t−1. Avoid using centered climate indices or other features that inadvertently contain future information.
+
+
+
+Models Compared: 
+Historical-average baseline: Predict a month using the historical average for that calendar month, calculated from the training data only. This simple reference establishes whether more complex methods add value.
+Random forest regression: Train an ensemble of decision trees on the same input features. Random forests can capture nonlinear relationships and feature interactions without requiring extensive feature scaling.
+Small feedforward neural network (PyTorch): Train a compact network to predict a numerical monthly precipitation total. Use a validation period to choose settings, with a loss such as mean squared error and an optimizer such as Adam. Standardize inputs using training data only.
+
+
+
+Workflow:
+Collect precipitation observations and historical ENSO indices; record station, units, coverage, and provenance.
+Clean observations, inspect missingness and station consistency, and aggregate daily precipitation into monthly totals.
+Perform exploratory analysis: plot the time series, seasonal distributions, missing-data patterns, and precipitation extremes.
+Construct lagged features and align them to the forecast date to avoid leakage.
+Split observations chronologically into training, validation, and final test periods.
+Fit the historical baseline and random forest; tune a small number of settings using training/validation data.
+Train a small PyTorch neural network and monitor validation performance to reduce overfitting.
+Evaluate all models on the same held-out test period; compare errors and inspect unusually wet months.
+Run an ablation comparison with and without ENSO features to test whether ENSO adds predictive value.
+
+Evaluation: 
+Use mean absolute error (MAE) as a readily interpretable primary metric and root mean squared error (RMSE) to emphasize larger errors. For the secondary extreme-month analysis, define a wet-month threshold from training data, then report precision, recall, and/or a confusion matrix. Compare all models on the same test dates.
+
+Interpretation: 
+Compare observed and predicted precipitation over time, inspect the largest errors, and assess whether ENSO features help. Feature importance or feature-ablation results indicate predictive usefulness, not causation.
+
+Limitations:
+Precipitation can be intermittent and highly skewed, and extreme events are rare. The neural network may not outperform simpler models on a small dataset. The project will report the result honestly rather than assume that added complexity improves accuracy.
+
+
+
+
+
+
+
+Planned Implementation:
+The project will be implemented in Python. The initial version will prioritize a reproducible end-to-end pipeline over a complicated interface.
+
+Libraries: 
+Pandas and NumPy for data handling; Matplotlib for plots; scikit-learn for the baseline, random forest, preprocessing, and metrics; PyTorch for the neural network.
+
+Code Components:
+
+Data Ingestion: 
+Load station data and ENSO indices; retain metadata and source notes.
+
+Preprocessing: 
+Validate dates and units, aggregate precipitation, and handle missing observations transparently.
+
+Feature Engineering:
+Create calendar and lagged precipitation features, then align ENSO indices without future leakage.
+
+Baseline Model:
+Calculate calendar-month averages using only training-period information.
+
+Random Forest Model:
+Train and evaluate a scikit-learn regressor.
+
+Neural Network: 
+Implement a small PyTorch regression model, training loop, validation, and prediction routine.
+
+Evaluation and Visualization:
+calculate metrics, plot observed versus predicted values, and save model-comparison tables.
+
+Draft of Possible Repository Structure
+data/raw/
+data/processed/
+notebooks/exploratory_analysis.ipynb
+src/data_processing.py
+src/features.py
+src/baseline.py
+src/random_forest.py
+src/neural_network.py
+src/evaluation.py
+results/figures/ and results/metrics.csv
+requirements.txt
+README.md
+
+The idea is that the program structure will be modular enough that a different location could be added later by changing the station/data configuration, but multi-location testing outside the core scope of the project. 
+
+Planned Demo - End Stage
+The final demonstration will show a complete forecasting workflow, from historical data to a fair comparison of predictions.
+
+Expected Demonstration Elements:
+
+Historical Climate Visualization:
+Monthly precipitation over time, with seasonal patterns and unusually wet months highlighted.
+
+Model Comparison:
+A table comparing the historical baseline, random forest, and neural network on the same held-out test period using MAE and RMSE.
+
+Forecasting vs Observed Plot:
+Visualize model predictions alongside actual precipitation for test months.
+
+Extreme Month Analysis:
+Show how well each approach identifies months above the selected wet-month threshold.
+
+ENSO Ablation:
+compare a model with ENSO features against one without them to see whether those indicators add predictive value.
+
+Discussion:
+Explain which approach performed best, where it failed, and what the results do and do not establish.
+
+Expected Deliverables: 
+
+Documented Python code, data-processing pipeline, saved evaluation metrics, figures, and a short report explaining methodology, results, limitations, and possible extensions.
+The project is successful if it produces a fair, reproducible comparison and a defensible conclusion—even if the machine learning models do not outperform the baseline.
+
